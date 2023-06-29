@@ -1,0 +1,47 @@
+﻿@model OrderTaker.Models.PurchaseOrder
+
+@{
+    ViewData["Title"] = "Orders";
+}
+
+<h1>Orders</h1>
+
+<p>
+    @*<button id="create-order"
+    class="btn btn-link"
+    type="button"
+    asp-action="Create">
+    Create New
+    </button>*@
+    <a asp-action="Create" asp-method="GET">Create New</a>
+</p>
+<table id="dt-order"
+       class="table table-striped table-bordered dt-responsive nowrap"
+       width="100%"
+       cellspacing="0">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Customer.FullName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateOfDelivery)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Status)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AmountDue)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+</table>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="~/js/order.js"></script>
+}

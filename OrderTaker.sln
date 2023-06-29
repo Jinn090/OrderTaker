@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33815.320
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6A5A85AB-A512-458D-BBC1-76C9F9D3CA33}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderTaker", "OrderTaker\OrderTaker.csproj", "{AFAECAF8-4D67-4498-B663-56D69226C6C1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AFAECAF8-4D67-4498-B663-56D69226C6C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFAECAF8-4D67-4498-B663-56D69226C6C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFAECAF8-4D67-4498-B663-56D69226C6C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFAECAF8-4D67-4498-B663-56D69226C6C1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2E7E8220-8C15-4FE3-85BD-8F3E4A003274}
+	EndGlobalSection
+EndGlobal
