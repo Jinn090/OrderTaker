@@ -16,7 +16,7 @@
         } else {
             PRICE_AUTO_NUMERIC.set(0);
         }
-       
+
         $('#modal-order-item').modal('show');
         $('#modal-order-item').find('.modal-title').append('<i class="fa-solid fa-plus fa-fw"></i> SKU List');
     });
@@ -26,7 +26,10 @@
             url: "/api/orders/skus/gePurchasedItems",
             dataSrc: '',
             type: "POST",
-            datatype: "json"
+            datatype: "json",
+            data(d) {
+                d.id = $('#PurchaseOrder_ID').val();
+            },
         },
         rowId: 'id',
         "columnDefs": [
@@ -37,7 +40,7 @@
             },
             {
                 targets: [3],
-                className: 'text-right pr-4', 
+                className: 'text-right pr-4',
             }
         ],
         columns: [
@@ -93,18 +96,49 @@
 
         var form = $("#form-sku");
         var data = $(form).serialize() + '&' + $.param({ PurchaseItems: SKU_DT.rows().data().toArray() });
-        console.log(data);
-        $.ajax({
-            url: form.attr('action'),
-            type: 'POST',
-            data: data,
-        })
-            .done(function (response) {
-                window.location.href = response.redirectToUrl;
+        /*console.log(form.attr('action'));*/
+        if (form.attr('action').includes('create')) {
+            //create ajax call
+            $.ajax({
+                url: form.attr('action'),
+                type: 'POST',
+                data: data,
             })
-            .fail(function (xhr, status, error) {
-                Swal.fire('Error!', 'Something went wrong.', 'error')
-            });
+                .done(function (response) {
+                    window.location.href = response.redirectToUrl;
+                })
+                .fail(function (xhr, status, error) {
+                    Swal.fire('Error!', 'Something went wrong.', 'error')
+                });
+        }
+        else //edit ajax call
+        {
+            $.ajax({
+                url: form.attr('action'),
+                type: 'POST',
+                data: data,
+            })
+                .done(function (response) {
+                    if ($('#PurchaseOrder_Status').val() == 'Completed') {
+                        window.location.href = "/Orders/Index";
+                    }
+                    else
+                    {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'Customer order updated.',
+                            showConfirmButton: false,
+                            timer: 3000
+                        })
+                    }
+                    
+                })
+                .fail(function (xhr, status, error) {
+                    Swal.fire('Error!', 'Something went wrong.', 'error')
+                });
+        }
+
     });
 
     let SKU_LIST_DT = $('#dt-sku-list').DataTable({
@@ -182,5 +216,5 @@
     $("#modal-order-item").on('show.bs.modal', function (e) {
         SKU_LIST_DT.ajax.reload();
     })
-   
+
 });

@@ -16,7 +16,6 @@ using System.Drawing;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Newtonsoft.Json.Linq;
 using Microsoft.DotNet.MSIdentity.Shared;
 using System.Linq;
 using Azure;
@@ -52,11 +51,21 @@ namespace OrderTaker.Controllers
         [HttpPost("api/orders/skus/gePurchasedItems")]
         public async Task<IActionResult> GetPurchasedItems(int? id, OrderTakingViewModel vm)
         {
+            Debug.WriteLine($"id: {id}");
             //OrderID = id
-            if(id != null)
+            if (id != null)
             {
                 var Response = await this._context.PurchaseItems
+                    .Include(x => x.SKU)
                     .Where(i => i.PurchaseOrderID == id)
+                    .Select(item => new
+                    {
+                        id = item.ID,
+                        skuId = item.SKU.ID,
+                        name = item.SKU.Name,
+                        quantity = item.Quantity,
+                        price = item.Price
+                    })
                     .ToListAsync();
                 return Json(Response);
             }
@@ -101,7 +110,8 @@ namespace OrderTaker.Controllers
             var vm = new OrderTakingViewModel()
             {
                 PurchaseItem = new PurchaseItem() { Quantity = 1 },
-                PurchaseOrder = new PurchaseOrder() { 
+                PurchaseOrder = new PurchaseOrder()
+                {
                     DateOfDelivery = DateTime.Today.AddDays(1)
                 }
             };
@@ -122,7 +132,7 @@ namespace OrderTaker.Controllers
                 vm.PurchaseOrder.TimeStamp = DateTime.Now;
                 vm.PurchaseOrder.CustomerID = vm.Customer.ID;
 
-                if(vm.PurchaseItems != null)
+                if (vm.PurchaseItems != null)
                 {
                     vm.PurchaseOrder.PurchaseItems = new List<PurchaseItem>();
 
@@ -136,19 +146,20 @@ namespace OrderTaker.Controllers
                         vm.PurchaseOrder.PurchaseItems.Add(item);
                     }
                 }
-                
+
 
                 //vm.PurchaseOrder.PurchaseItems.Add()
 
                 _context.Add(vm.PurchaseOrder);
 
                 await _context.SaveChangesAsync();
-                
+
             }
             catch (DbException ex)
             {
                 Debug.WriteLine(ex);
-;            }
+                ;
+            }
 
             return Json(new { redirectToUrl = Url.Action("Index", "Orders") });
         }
@@ -180,7 +191,7 @@ namespace OrderTaker.Controllers
 
             PopulateCustomerDropDownList(purchaseOrder.Customer.ID);
             PopulateStatusDropDownList((Status)Enum.Parse(typeof(Status), purchaseOrder.Status));
-            
+
             return View(vm);
         }
 
@@ -198,11 +209,11 @@ namespace OrderTaker.Controllers
                 .AsNoTracking()
                 .FirstOrDefaultAsync(po => po.ID == id);
 
-            if(purchaseOrderToUpdate != null)
+            if (purchaseOrderToUpdate != null)
             {
                 try
                 {
-                    
+
                     //_context.Update(purchaseOrderToUpdate);
                     await _context.SaveChangesAsync();
 
@@ -216,7 +227,7 @@ namespace OrderTaker.Controllers
                         "see your system administrator.");
                 }
 
-           
+
                 PopulateCustomerDropDownList(purchaseOrderToUpdate.Customer.ID);
                 PopulateStatusDropDownList((Status)Enum.Parse(typeof(Status), purchaseOrderToUpdate.Status));
 
@@ -229,8 +240,8 @@ namespace OrderTaker.Controllers
         private void PopulateCustomerDropDownList(object selectedCustomer = null)
         {
             var customersQuery = from customer in _context.Customers
-                            where customer.IsActive == true
-                            select customer;
+                                 where customer.IsActive == true
+                                 select customer;
 
             ViewBag.CustomerID = new SelectList(customersQuery.AsNoTracking(), "ID", "FullName", selectedCustomer);
         }
@@ -238,7 +249,7 @@ namespace OrderTaker.Controllers
         private void PopulateStatusDropDownList(Status selectedStatus = Status.New)
         {
             var list = (Enum.GetValues(typeof(Status)).Cast<Status>()
-                .Select(s => new SelectListItem() { Text = s.ToString(), Value = s.ToString()}))
+                .Select(s => new SelectListItem() { Text = s.ToString(), Value = s.ToString() }))
                 .ToList();
 
             ViewBag.StatusList = new SelectList(list, "Value", "Text", selectedStatus);
