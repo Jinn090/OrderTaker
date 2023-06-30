@@ -51,8 +51,7 @@ namespace OrderTaker.Controllers
         [HttpPost("api/orders/skus/gePurchasedItems")]
         public async Task<IActionResult> GetPurchasedItems(int? id, OrderTakingViewModel vm)
         {
-            Debug.WriteLine($"id: {id}");
-            //OrderID = id
+            //Debug.WriteLine($"id: {id}");
             if (id != null)
             {
                 var Response = await this._context.PurchaseItems
@@ -118,7 +117,6 @@ namespace OrderTaker.Controllers
             return View(vm);
         }
 
-
         [HttpPost]
         public async Task<IActionResult> Create(OrderTakingViewModel vm)
         {
@@ -158,7 +156,6 @@ namespace OrderTaker.Controllers
             catch (DbException ex)
             {
                 Debug.WriteLine(ex);
-                ;
             }
 
             return Json(new { redirectToUrl = Url.Action("Index", "Orders") });
@@ -182,6 +179,10 @@ namespace OrderTaker.Controllers
                 return NotFound();
             }
 
+            if(purchaseOrder.Status == Status.Completed.ToString())
+            {
+                return RedirectToAction(nameof(Index));
+            }
 
             var vm = new OrderTakingViewModel()
             {
@@ -202,19 +203,21 @@ namespace OrderTaker.Controllers
             {
                 return NotFound();
             }
-            Console.WriteLine(vm);
+            Debug.WriteLine(vm.Customer.ID);
             var purchaseOrderToUpdate = await _context.PurchaseOrders
                 .Include(po => po.PurchaseItems)
                 .Include(po => po.Customer)
-                .AsNoTracking()
                 .FirstOrDefaultAsync(po => po.ID == id);
 
             if (purchaseOrderToUpdate != null)
             {
                 try
                 {
+                    purchaseOrderToUpdate.CustomerID = vm.Customer.ID;
+                    purchaseOrderToUpdate.DateOfDelivery = vm.PurchaseOrder.DateOfDelivery;
+                    purchaseOrderToUpdate.Status = vm.PurchaseOrder.Status;
 
-                    //_context.Update(purchaseOrderToUpdate);
+                    _context.Update(purchaseOrderToUpdate);
                     await _context.SaveChangesAsync();
 
                     return RedirectToAction(nameof(Index));
