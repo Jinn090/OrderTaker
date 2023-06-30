@@ -60,6 +60,7 @@ namespace OrderTaker.Controllers
                     .Select(item => new
                     {
                         id = item.ID,
+                        unitPrice = item.SKU.UnitPrice,
                         skuId = item.SKU.ID,
                         name = item.SKU.Name,
                         quantity = item.Quantity,
@@ -203,7 +204,7 @@ namespace OrderTaker.Controllers
             {
                 return NotFound();
             }
-            Debug.WriteLine(vm.Customer.ID);
+            
             var purchaseOrderToUpdate = await _context.PurchaseOrders
                 .Include(po => po.PurchaseItems)
                 .Include(po => po.Customer)
@@ -217,6 +218,33 @@ namespace OrderTaker.Controllers
                     purchaseOrderToUpdate.DateOfDelivery = vm.PurchaseOrder.DateOfDelivery;
                     purchaseOrderToUpdate.Status = vm.PurchaseOrder.Status;
 
+                    foreach (var item in vm.PurchaseItems)
+                    {
+                        
+                        //Debug.WriteLine($"ID: {item.ID} quantity:{item.Quantity}");
+                        if(item.ID != 0)
+                        {
+                            var purchasedItem = purchaseOrderToUpdate.PurchaseItems.First(x => x.ID == item.ID);
+                            purchasedItem.Quantity = item.Quantity;
+                            purchasedItem.Price = item.Price;
+                            purchasedItem.TimeStamp = DateTime.Now;
+                            purchasedItem.UserID = _userManager.GetUserAsync(User).Result!.Id;
+
+                            purchaseOrderToUpdate.AmountDue += purchasedItem.Price;
+
+                        }
+                        else
+                        {
+                            item.TimeStamp = DateTime.Now;
+                            item.UserID = _userManager.GetUserAsync(User).Result!.Id;
+
+                            purchaseOrderToUpdate.AmountDue += item.Price;
+
+                            purchaseOrderToUpdate.PurchaseItems.Add(item);
+                        }
+                    }
+
+                    
                     _context.Update(purchaseOrderToUpdate);
                     await _context.SaveChangesAsync();
 

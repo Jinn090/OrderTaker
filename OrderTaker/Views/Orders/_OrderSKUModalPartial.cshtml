@@ -1,0 +1,42 @@
+﻿@model OrderTaker.Models.ViewModel.OrderTakingViewModel
+@using Microsoft.AspNetCore.Identity
+@using OrderTaker.Data
+@inject UserManager<User> UserManager
+<div class="modal fade" id="modal-order-item-details" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="form-order-item-details" method="POST">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label asp-for="PurchaseItem.Quantity" class="control-label"></label>
+                                <input step="1" min="1" asp-for="PurchaseItem.Quantity" class="form-control" />
+                                <span asp-validation-for="PurchaseItem.Quantity" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="PurchaseItem.SKU.UnitPrice" class="control-label"></label>
+                                <input asp-for="PurchaseItem.SKU.UnitPrice" class="form-control" disabled />
+                                <span asp-validation-for="PurchaseItem.SKU.UnitPrice" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="PurchaseItem.Price" class="control-label"></label>
+                                <input asp-for="PurchaseItem.Price" class="form-control" disabled />
+                                <span asp-validation-for="PurchaseItem.Price" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <br />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

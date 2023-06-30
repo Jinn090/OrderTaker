@@ -50,6 +50,9 @@
                             @Html.DisplayNameFor(model => model.PurchaseItem.SKU.ID)
                         </th>
                         <th>
+                            @Html.DisplayNameFor(model => model.PurchaseItem.SKU.UnitPrice)
+                        </th>
+                        <th>
                             @Html.DisplayNameFor(model => model.PurchaseItem.SKU.Name)
                         </th>
                         <th>
@@ -61,7 +64,14 @@
                         <th>Action</th>
                     </tr>
                 </thead>
-               
+                <tfoot>
+                    <tr>
+                        <th colspan="4" style="text-align:right">Total:</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+
             </table>
             <br>
             <div class="form-group">
@@ -72,6 +82,7 @@
     </form>
 </div>
 <partial name="_OrderTakingModalPartial" />
+<partial name="_OrderSKUModalPartial" />
 
 <div>
     <a asp-action="Index">Back to List</a>
