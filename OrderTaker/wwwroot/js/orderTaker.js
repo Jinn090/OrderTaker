@@ -31,9 +31,13 @@
         rowId: 'id',
         "columnDefs": [
             {
-                "targets": [0],
-                "visible": false,
-                "searchable": false
+                targets: [0],
+                visible: false,
+                searchable: false
+            },
+            {
+                targets: [3],
+                className: 'text-right pr-4', 
             }
         ],
         columns: [
@@ -53,7 +57,35 @@
                     return "<button type='button' class='btn btn-link' onclick=EditOrder('" + data.id + "')>Edit</button>";
                 }
             },
-        ]
+        ],
+        footerCallback: function (row, data, start, end, display) {
+            var api = this.api();
+
+            // Remove the formatting to get integer data for summation
+            var intVal = function (i) {
+                return typeof i === 'string' ? i.replace(/[\$,]/g, '') * 1 : typeof i === 'number' ? i : 0;
+            };
+
+            // Total over all pages
+            total = api
+                .column(3)
+                .data()
+                .reduce(function (a, b) {
+                    return intVal(a) + intVal(b);
+                }, 0);
+
+            // Total over this page
+            pageTotal = api
+                .column(3, { page: 'applied' })
+                .data()
+                .reduce(function (a, b) {
+                    return intVal(a) + intVal(b);
+                }, 0);
+
+            var formattedTotal = $.fn.dataTable.render.number(',', '.', 2).display(Number.parseFloat(total).toFixed(2));
+            // Update footer
+            $(api.column(3).footer()).html(formattedTotal);
+        }
     });
 
     $("#form-sku").on('submit', function (e) {
@@ -74,7 +106,6 @@
                 Swal.fire('Error!', 'Something went wrong.', 'error')
             });
     });
-
 
     let SKU_LIST_DT = $('#dt-sku-list').DataTable({
         select: {
@@ -107,7 +138,6 @@
         quantity: null,
         price: null,
     };
-
 
     $('#dt-sku-list tbody').on('click', 'tr', function () {
         SKU_OBJ.id = SKU_LIST_DT.row(this).data().id;
