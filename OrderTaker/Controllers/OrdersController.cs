@@ -1,15 +1,25 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using OrderTaker.Data;
 using OrderTaker.Models;
 using OrderTaker.Models.ViewModel;
+using System;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Drawing;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Newtonsoft.Json.Linq;
+using Microsoft.DotNet.MSIdentity.Shared;
+using System.Linq;
+using Azure;
 
 namespace OrderTaker.Controllers
 {
@@ -56,12 +66,30 @@ namespace OrderTaker.Controllers
 
 
         [HttpPost("api/orders/skus/get")]
-        public async Task<IActionResult> GetSKUs()
+        public async Task<IActionResult> GetSKUs(string skus)
         {
-            var Response = await this._context.SKUs
+            JArray jArray = JArray.Parse(skus);
+            var names = new List<string>();
+            foreach (JObject jObject in jArray.Cast<JObject>())
+            {
+                names.Add((string)jObject["name"]);
+                //Debug.WriteLine($"{(string)jObject["skuId"]} -> {(string)jObject["name"]}");
+            }
+            if (names.Count > 0)
+            {
+                var response = await _context.SKUs
+                    .Where(sku => !names.Contains(sku.Name))
+                    .Where(sku => sku.IsActive == true)
+                    .ToListAsync();
+                return Json(response);
+            }
+            else
+            {
+                var response = await this._context.SKUs
                 .Where(sku => sku.IsActive == true)
                 .ToListAsync();
-            return Json(Response);
+                return Json(response);
+            }
         }
 
         [HttpGet]

@@ -8,11 +8,15 @@
         });
     $("#add-sku").click(function (event) {
         //default
-        SKU_LIST_DT.row(':eq(0)').select();
-        SKU_OBJ.id = SKU_LIST_DT.row(0).data().id;
-        SKU_OBJ.name = SKU_LIST_DT.row(0).data().name
-        UpdatePurchaseItemPrice(SKU_LIST_DT.row({ selected: true }).data().unitPrice);
-
+        if (SKU_LIST_DT.row(0).data() != null) {
+            SKU_LIST_DT.row(':eq(0)').select();
+            SKU_OBJ.id = SKU_LIST_DT.row(0).data().id;
+            SKU_OBJ.name = SKU_LIST_DT.row(0).data().name
+            UpdatePurchaseItemPrice(SKU_LIST_DT.row({ selected: true }).data().unitPrice);
+        } else {
+            PRICE_AUTO_NUMERIC.set(0);
+        }
+       
         $('#modal-order-item').modal('show');
         $('#modal-order-item').find('.modal-title').append('<i class="fa-solid fa-plus fa-fw"></i> SKU List');
     });
@@ -72,7 +76,6 @@
     });
 
 
-
     let SKU_LIST_DT = $('#dt-sku-list').DataTable({
         select: {
             style: 'single'
@@ -82,7 +85,10 @@
             url: "/api/orders/skus/get",
             dataSrc: '',
             type: "POST",
-            datatype: "json"
+            datatype: "json",
+            data(d) {
+                d.SKUs = JSON.stringify(SKU_DT.rows().data().toArray())
+            },
         },
         columns: [
             { data: "name", name: "Name" },
@@ -127,37 +133,24 @@
         if (isvalid) {
             e.preventDefault();
 
-            var form = $("#form-order-item");
-            var data = $(form).serialize();
+            SKU_DT.row.add({
+                id: null,
+                skuId: SKU_OBJ.id,
+                name: SKU_OBJ.name,
+                quantity: SKU_OBJ.quantity,
+                price: SKU_OBJ.price
+            }).draw(false);
 
-            var filteredData = SKU_DT
-                .rows()
-                .data()
-                .toArray();
-
-            var result = filteredData.find(e => e.id === SKU_OBJ.id);
-            if (result == null) {
-                SKU_DT.row.add({
-                    id: null,
-                    skuId: SKU_OBJ.id,
-                    name: SKU_OBJ.name,
-                    quantity: SKU_OBJ.quantity,
-                    price: SKU_OBJ.price
-                }).draw(false);
-            } else {
-
-                var row = SKU_DT.row('#' + SKU_OBJ.id);
-                var data = row.data();
-    
-                data.quantity = SKU_OBJ.quantity;
-                data.price = SKU_OBJ.price;
-
-                row.data(data).draw(false);
+            if (SKU_LIST_DT.rows().data().toArray() == null) {
+                PRICE_AUTO_NUMERIC.set(0);
             }
 
             $("#modal-order-item").modal("hide");
         }
     });
 
+    $("#modal-order-item").on('show.bs.modal', function (e) {
+        SKU_LIST_DT.ajax.reload();
+    })
    
 });
