@@ -14,8 +14,7 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Customer" class="control-label"></label>
-                <select asp-for="Customer.ID" class="form-control" asp-items="ViewBag.CustomerID">
-                    <option value="">-- Select Customer --</option>
+                <select asp-for="Customer.ID" class="form-control">
                 </select>
                 <span asp-validation-for="Customer.ID" class="text-danger" />
             </div>
@@ -89,6 +88,6 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-
+    <script>var myJsVariable = '@ViewBag.CustomerID'</script>
     <script src="~/js/orderTaker.js"></script>
 }

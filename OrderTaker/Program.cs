@@ -1,18 +1,28 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using OrderTaker.Data;
+using OrderTaker.Models;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<OrderTakerDbContext>(options =>
-    options.UseSqlServer(connectionString));
+var OrderTakerConnectionString = builder.Configuration.GetConnectionString("OrderTaker") ?? 
+    throw new InvalidOperationException("Connection string 'OrderTaker' not found.");
+var OrderTakerIdentityConnectionString = builder.Configuration.GetConnectionString("OrderTakerIdentity") ?? 
+    throw new InvalidOperationException("Connection string 'OrderTakerIdentity' not found.");
+
+builder.Services.AddDbContext<OrderTakerContext>(options =>
+    options.UseSqlServer(OrderTakerConnectionString));
+builder.Services.AddDbContext<AppIdentityDbContext>(options =>
+    options.UseSqlServer(OrderTakerIdentityConnectionString));
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = false)
-    .AddEntityFrameworkStores<OrderTakerDbContext>();
+builder.Services.AddDefaultIdentity<User>(options => 
+    options.SignIn.RequireConfirmedAccount = false)
+    .AddEntityFrameworkStores<AppIdentityDbContext>();
+
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddMvcCore().AddJsonOptions(options =>
@@ -38,7 +48,7 @@ builder.Services.Configure<IdentityOptions>(options =>
     // User settings.
     options.User.AllowedUserNameCharacters =
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
-    options.User.RequireUniqueEmail = false;
+    options.User.RequireUniqueEmail = true;
 });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -50,7 +60,13 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    using var scope = app.Services.CreateScope();
+    var services = scope.ServiceProvider;
+    await IdentitySeedData.Initialize(services);
+
     app.UseMigrationsEndPoint();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 else
 {
@@ -58,12 +74,6 @@ else
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-};
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

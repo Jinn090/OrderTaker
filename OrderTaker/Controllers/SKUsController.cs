@@ -17,10 +17,10 @@ namespace OrderTaker.Controllers
     [Authorize]
     public class SKUsController : Controller
     {
-        private readonly OrderTakerDbContext _context;
+        private readonly OrderTakerContext _context;
         private readonly UserManager<User> _userManager;
 
-        public SKUsController(OrderTakerDbContext context, UserManager<User> userManager)
+        public SKUsController(OrderTakerContext context, UserManager<User> userManager)
         {
             _context = context;
             _userManager = userManager;
@@ -51,11 +51,7 @@ namespace OrderTaker.Controllers
             sku.CreatedBy =
                 _userManager.GetUserAsync(User).Result!.FirstName + " " +
                 _userManager.GetUserAsync(User).Result!.LastName;
-            sku.TimeStamp = DateTime.Now;
-
-
-            //temp
-            sku.Image = Encoding.ASCII.GetBytes("temporary data");
+            sku.Timestamp = DateTime.Now;
 
             try
             {
@@ -104,7 +100,7 @@ namespace OrderTaker.Controllers
                 sku.CreatedBy =
                     _userManager.GetUserAsync(User).Result!.FirstName + " " +
                     _userManager.GetUserAsync(User).Result!.LastName;
-                sku.TimeStamp = DateTime.Now;
+                sku.Timestamp = DateTime.Now;
 
                 var checkName = await _context.SKUs
                     .Where(c => c.Name == sku.Name && c.ID != id)

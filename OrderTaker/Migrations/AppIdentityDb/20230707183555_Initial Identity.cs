@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace OrderTaker.Migrations
+namespace OrderTaker.Migrations.AppIdentityDb
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class InitialIdentity : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -158,128 +158,6 @@ namespace OrderTaker.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "Customer",
-                columns: table => new
-                {
-                    ID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    MobileNumber = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
-                    City = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "getdate()"),
-                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TimeStamp = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "getdate()"),
-                    UserID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(100)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Customer", x => x.ID);
-                    table.ForeignKey(
-                        name: "FK_Customer_AspNetUsers_UserID",
-                        column: x => x.UserID,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "SKU",
-                columns: table => new
-                {
-                    ID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Code = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "getdate()"),
-                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TimeStamp = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "getdate()"),
-                    UserID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    Image = table.Column<byte[]>(type: "varbinary(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SKU", x => x.ID);
-                    table.ForeignKey(
-                        name: "FK_SKU_AspNetUsers_UserID",
-                        column: x => x.UserID,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "PurchaseOrder",
-                columns: table => new
-                {
-                    ID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    CustomerID = table.Column<int>(type: "int", nullable: false),
-                    DateOfDelivery = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Status = table.Column<int>(type: "varchar(20)", nullable: false),
-                    AmountDue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "getdate()"),
-                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    TimeStamp = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "getdate()"),
-                    UserID = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PurchaseOrder", x => x.ID);
-                    table.ForeignKey(
-                        name: "FK_PurchaseOrder_AspNetUsers_UserID",
-                        column: x => x.UserID,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_PurchaseOrder_Customer_CustomerID",
-                        column: x => x.CustomerID,
-                        principalTable: "Customer",
-                        principalColumn: "ID");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "PurchaseItem",
-                columns: table => new
-                {
-                    ID = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    PurchaseOrderID = table.Column<int>(type: "int", nullable: false),
-                    SkuID = table.Column<int>(type: "int", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    TimeStamp = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "getdate()"),
-                    UserID = table.Column<string>(type: "nvarchar(450)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PurchaseItem", x => x.ID);
-                    table.ForeignKey(
-                        name: "FK_PurchaseItem_AspNetUsers_UserID",
-                        column: x => x.UserID,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_PurchaseItem_PurchaseOrder_PurchaseOrderID",
-                        column: x => x.PurchaseOrderID,
-                        principalTable: "PurchaseOrder",
-                        principalColumn: "ID");
-                    table.ForeignKey(
-                        name: "FK_PurchaseItem_SKU_SkuID",
-                        column: x => x.SkuID,
-                        principalTable: "SKU",
-                        principalColumn: "ID",
-                        onDelete: ReferentialAction.NoAction);
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -318,53 +196,6 @@ namespace OrderTaker.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Customer_FullName_MobileNumber",
-                table: "Customer",
-                columns: new[] { "FullName", "MobileNumber" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Customer_UserID",
-                table: "Customer",
-                column: "UserID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PurchaseItem_PurchaseOrderID",
-                table: "PurchaseItem",
-                column: "PurchaseOrderID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PurchaseItem_SkuID",
-                table: "PurchaseItem",
-                column: "SkuID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PurchaseItem_UserID",
-                table: "PurchaseItem",
-                column: "UserID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PurchaseOrder_CustomerID",
-                table: "PurchaseOrder",
-                column: "CustomerID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_PurchaseOrder_UserID",
-                table: "PurchaseOrder",
-                column: "UserID");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SKU_Name_Code",
-                table: "SKU",
-                columns: new[] { "Name", "Code" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SKU_UserID",
-                table: "SKU",
-                column: "UserID");
         }
 
         /// <inheritdoc />
@@ -386,19 +217,7 @@ namespace OrderTaker.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "PurchaseItem");
-
-            migrationBuilder.DropTable(
                 name: "AspNetRoles");
-
-            migrationBuilder.DropTable(
-                name: "PurchaseOrder");
-
-            migrationBuilder.DropTable(
-                name: "SKU");
-
-            migrationBuilder.DropTable(
-                name: "Customer");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

@@ -1,5 +1,23 @@
 ﻿$(() => {
+
+    $.post("/api/orders/skus/getCustomers", function (data) {
+        $('#Customer_ID').select2({
+            data: data
+        });
+    })
     
+    //$('#Customer_ID').select2({
+    //    placeholder: "Select Customer",
+    //    ajax: {
+    //        url: "/api/orders/skus/getCustomers",
+    //        dataType: 'json',
+    //        type: 'POST'
+    //    },
+    //    matcher: matchCustom,
+    //});
+
+
+    // rewrite codes
     const PRICE_AUTO_NUMERIC = new AutoNumeric(
         '#PurchaseItem_Price',
         {
@@ -22,7 +40,8 @@
             emptyInputBehavior: 'zero',
             modifyValueOnWheel: false
         });
-    
+
+
     $("#add-sku").click(function (event) {
         //default
         if (SKU_LIST_DT.row(0).data() != null) {

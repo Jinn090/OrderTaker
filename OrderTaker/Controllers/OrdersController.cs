@@ -19,6 +19,7 @@ using System.Text.Json.Nodes;
 using Microsoft.DotNet.MSIdentity.Shared;
 using System.Linq;
 using Azure;
+using Microsoft.AspNetCore.Http;
 
 namespace OrderTaker.Controllers
 {
@@ -26,9 +27,9 @@ namespace OrderTaker.Controllers
     public class OrdersController : Controller
     {
 
-        private readonly OrderTakerDbContext _context;
+        private readonly OrderTakerContext _context;
         private readonly UserManager<User> _userManager;
-        public OrdersController(OrderTakerDbContext context, UserManager<User> userManager)
+        public OrdersController(OrderTakerContext context, UserManager<User> userManager)
         {
             _context = context;
             _userManager = userManager;
@@ -128,7 +129,7 @@ namespace OrderTaker.Controllers
                 vm.PurchaseOrder.CreatedBy =
                     _userManager.GetUserAsync(User).Result!.FirstName + " " +
                     _userManager.GetUserAsync(User).Result!.LastName;
-                vm.PurchaseOrder.TimeStamp = DateTime.Now;
+                vm.PurchaseOrder.Timestamp = DateTime.Now;
                 vm.PurchaseOrder.CustomerID = vm.Customer.ID;
 
                 if (vm.PurchaseItems != null)
@@ -137,7 +138,7 @@ namespace OrderTaker.Controllers
 
                     foreach (PurchaseItem item in vm.PurchaseItems)
                     {
-                        item.TimeStamp = DateTime.Now;
+                        item.Timestamp = DateTime.Now;
                         item.UserID = _userManager.GetUserAsync(User).Result!.Id;
 
                         vm.PurchaseOrder.AmountDue += item.Price;
@@ -227,7 +228,7 @@ namespace OrderTaker.Controllers
                             var purchasedItem = purchaseOrderToUpdate.PurchaseItems.First(x => x.ID == item.ID);
                             purchasedItem.Quantity = item.Quantity;
                             purchasedItem.Price = item.Price;
-                            purchasedItem.TimeStamp = DateTime.Now;
+                            purchasedItem.Timestamp = DateTime.Now;
                             purchasedItem.UserID = _userManager.GetUserAsync(User).Result!.Id;
 
                             purchaseOrderToUpdate.AmountDue += purchasedItem.Price;
@@ -235,7 +236,7 @@ namespace OrderTaker.Controllers
                         }
                         else
                         {
-                            item.TimeStamp = DateTime.Now;
+                            item.Timestamp = DateTime.Now;
                             item.UserID = _userManager.GetUserAsync(User).Result!.Id;
 
                             purchaseOrderToUpdate.AmountDue += item.Price;
@@ -275,6 +276,23 @@ namespace OrderTaker.Controllers
                                  select customer;
 
             ViewBag.CustomerID = new SelectList(customersQuery.AsNoTracking(), "ID", "FullName", selectedCustomer);
+        }
+
+
+        [HttpPost("api/orders/skus/getCustomers")]
+        public async Task<IActionResult> getCustomers()
+        {
+            var customers = await this._context.Customers
+                .Where(cust => cust.IsActive == true)
+                .Select(cust => new
+                {
+                    id = cust.ID,
+                    text = cust.FullName
+                })
+                .AsNoTracking()
+                .ToListAsync();
+            return Json(customers);
+            //return Json(new { results = customers });
         }
 
         private void PopulateStatusDropDownList(Status selectedStatus = Status.New)

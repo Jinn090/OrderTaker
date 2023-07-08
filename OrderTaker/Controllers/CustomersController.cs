@@ -17,9 +17,9 @@ namespace OrderTaker.Controllers
     [Authorize]
     public class CustomersController : Controller
     {
-        private readonly OrderTakerDbContext _context;
+        private readonly OrderTakerContext _context;
         private readonly UserManager<User> _userManager;
-        public CustomersController(OrderTakerDbContext context, UserManager<User> userManager)
+        public CustomersController(OrderTakerContext context, UserManager<User> userManager)
         {
             _context = context;
             _userManager = userManager;
@@ -53,7 +53,7 @@ namespace OrderTaker.Controllers
             customer.CreatedBy = 
                 _userManager.GetUserAsync(User).Result!.FirstName + " " +
                 _userManager.GetUserAsync(User).Result!.LastName;
-            customer.TimeStamp = DateTime.Now;
+            customer.Timestamp = DateTime.Now;
 
             try
             {
@@ -101,7 +101,7 @@ namespace OrderTaker.Controllers
             try
             {
                 customer.FullName = $"{customer.LastName}, {customer.FirstName}";
-                customer.TimeStamp = DateTime.Now;
+                customer.Timestamp = DateTime.Now;
                 customer.CreatedBy =
                     _userManager.GetUserAsync(User).Result!.FirstName + " " +
                     _userManager.GetUserAsync(User).Result!.LastName;
