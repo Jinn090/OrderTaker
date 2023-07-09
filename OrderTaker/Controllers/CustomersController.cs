@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -9,8 +11,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using OrderTaker.Data;
 using OrderTaker.Models;
+using OrderTaker.Models.ViewModel;
 
 namespace OrderTaker.Controllers
 {
@@ -26,12 +30,66 @@ namespace OrderTaker.Controllers
         }
 
         [HttpPost("api/customers/get")]
-        public async Task<IActionResult> GetCustomers()
+        public async Task<IActionResult> GetCustomers([FromBody] DtParameters dtParameters)
         {
-            var Response = await this._context.Customers.ToListAsync();
-            return Json(Response);
+            //Debug.WriteLine($"Draw: {dtParameters.Draw}");
+            //Debug.WriteLine($"Length: {dtParameters.Length}");
+            //Debug.WriteLine($"Order: column index - {dtParameters.Order[0].Column} column name - {dtParameters.Columns[dtParameters.Order[0].Column].Name} dir -  {dtParameters.Order[0].Dir}");
+    
+            var searchBy = dtParameters.Search?.Value;
+
+            // if we have an empty search then just order the results by Id ascending
+            var orderCriteria = "id";
+            var orderDirection = dtParameters.Order[0].Dir.ToString().ToLower();
+            
+            if (dtParameters.Order != null)
+            {
+                // in this example we just default sort on the 1st column
+                orderCriteria = dtParameters.Columns[dtParameters.Order[0].Column].Data;
+                //orderAscendingDirection = dtParameters.Order[0].Dir.ToString().ToLower() == "asc";
+            }
+
+            var query = _context.Customers.AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchBy))
+            {
+                query = query.Where(cust =>
+                    cust.FullName != null && cust.FullName.ToLower().Contains(searchBy.ToLower()) ||
+                    cust.MobileNumber != null && cust.MobileNumber.ToLower().Contains(searchBy.ToLower()) ||
+                    cust.City != null && cust.City.ToLower().Contains(searchBy.ToLower()));
+            }
+
+            orderCriteria = $"{orderCriteria}_{orderDirection}";
+            Debug.WriteLine($"Order: {orderCriteria}");
+
+            query = orderCriteria switch
+            {
+                "fullName_asc" => query.OrderBy(x => x.FullName),
+                "fullName_desc" => query.OrderByDescending(x => x.FullName),
+                "mobileNumber_asc" => query.OrderBy(x => x.MobileNumber),
+                "mobileNumber_desc" => query.OrderByDescending(x => x.MobileNumber),
+                "city_asc" => query.OrderBy(x => x.City),
+                "city_desc" => query.OrderByDescending(x => x.City),
+                "isActive_asc" => query.OrderBy(x => x.IsActive),
+                "isActive_desc" => query.OrderByDescending(x => x.IsActive),
+                _ => query.OrderBy(x => x.ID),
+            };
+
+            // now just get the count of items (without the skip and take) - eg how many could be returned with filtering
+            var filteredResultsCount = await query.CountAsync();
+            var totalResultsCount = await _context.Customers.CountAsync();
+
+            return Json(new DtResult<Customer>
+            {
+                Draw = dtParameters.Draw,
+                RecordsTotal = totalResultsCount,
+                RecordsFiltered = filteredResultsCount,
+                Data = await query
+                    .Skip(dtParameters.Start)
+                    .Take(dtParameters.Length)
+                    .ToListAsync()
+            });
         }
-       
 
         public IActionResult Index()
         {

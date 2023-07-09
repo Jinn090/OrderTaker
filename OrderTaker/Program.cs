@@ -28,6 +28,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddMvcCore().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
 builder.Services.Configure<IdentityOptions>(options =>

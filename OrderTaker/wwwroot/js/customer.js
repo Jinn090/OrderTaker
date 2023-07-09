@@ -53,11 +53,17 @@ $(() => {
     });
 
     let CUSTOMER_DT = $('#dt-customer').DataTable({
+        proccessing: true,
+        serverSide: true,
         ajax: {
             url: "/api/customers/get",
-            dataSrc: '',
             type: "POST",
-            datatype: "json"
+            contentType: "application/json",
+            dataType: "json",
+            data: function (d) {
+                console.log(d);
+                return JSON.stringify(d);
+            }
         },
         columns: [
             { data: "fullName", name: "FullName" },
